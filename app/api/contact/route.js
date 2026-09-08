@@ -5,12 +5,21 @@ function clean(value, maxLength) {
 }
 
 export async function POST(request) {
-  const form = await request.formData();
+  let form;
+  try {
+    form = await request.formData();
+  } catch {
+    return Response.json({ error: 'Please submit the form again.' }, { status: 400 });
+  }
+
   if (clean(form.get('company_website'), 200)) return Response.json({ ok: true });
 
   const name = clean(form.get('name'), 120);
   const email = clean(form.get('email'), 200);
   const company = clean(form.get('company'), 160);
+  const industry = clean(form.get('industry'), 120);
+  const service = clean(form.get('service'), 160);
+  const budget = clean(form.get('budget'), 120);
   const message = clean(form.get('message'), 4000);
 
   if (!name || !/^\S+@\S+\.\S+$/.test(email) || !message) {
@@ -28,13 +37,27 @@ export async function POST(request) {
     auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASSWORD }
   });
 
-  await transporter.sendMail({
-    from: process.env.CONTACT_FROM || process.env.SMTP_USER,
-    to: process.env.CONTACT_TO || 'ajay@growthwithajay.com',
-    replyTo: email,
-    subject: `New enquiry from ${name}`,
-    text: `Name: ${name}\nEmail: ${email}\nCompany: ${company}\n\n${message}`
-  });
+  try {
+    await transporter.sendMail({
+      from: process.env.CONTACT_FROM || process.env.SMTP_USER,
+      to: process.env.CONTACT_TO || 'ajay@growthwithajay.com',
+      replyTo: email,
+      subject: `New enquiry from ${name}`,
+      text: [
+        `Name: ${name}`,
+        `Email: ${email}`,
+        `Company: ${company || 'Not provided'}`,
+        `Industry: ${industry || 'Not provided'}`,
+        `Service: ${service || 'Not provided'}`,
+        `Budget: ${budget || 'Not provided'}`,
+        '',
+        message
+      ].join('\n')
+    });
+  } catch (error) {
+    console.error('Contact email delivery failed', error);
+    return Response.json({ error: 'We could not send your message. Please email directly.' }, { status: 502 });
+  }
 
   return Response.json({ ok: true });
 }

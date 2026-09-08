@@ -1,8 +1,8 @@
-# growthwithajay.com — deploy & edit guide
+# growthwithajay.com - deploy & edit guide
 
 ## Next.js deployment
 
-The site now runs as a Next.js application with server-side rendering and a Node.js contact API.
+The site runs as a Next.js application with Node.js server rendering, static route generation, and a Node.js contact API.
 
 ```bash
 npm install
@@ -10,33 +10,25 @@ npm run build
 npm start
 ```
 
-Set the SMTP variables from `.env.example` in the hosting provider before enabling contact delivery. The existing HTML files are used as the content source by the SSR route, while assets are served from `public/`.
+Set the SMTP variables from `.env.example` in the hosting provider before enabling contact delivery. Page markup lives in `content/pages/` and is consumed by the Next route; assets are served from `public/`.
 
-The old PHP handler remains in the repository for reference but is no longer used by the form.
+PHP is not part of the application and is not required by the contact form.
 
 **Positioning:** *Most marketers talk about AI. I ship the agent.* The site argues that Ajay isn't just a strategist who recommends automation — he builds the n8n workflows and AI agents himself, across Web3, real estate and fashion. He is explicitly **not** a software engineer and doesn't build products or apps; what he builds is the automation layer around marketing. Keep that honesty line intact if you edit the copy (see the "Are you a developer?" FAQ on the About and Automation pages) — it's what makes the claim credible instead of oversold.
 
 ---
 
-## 1. Upload to Hostinger (5 minutes)
+## 1. Deploy the Next.js app
 
-1. hPanel → **Websites** → your site → **File Manager**.
-2. Open **`public_html`** and delete Hostinger's default `index.html` / `default.php`.
-3. Upload the **contents** of this folder (not the folder itself) into `public_html`.
-   Easiest: zip the contents, upload the zip, right-click → **Extract**.
-4. Turn on **Show hidden files** (File Manager → Settings) so **`.htaccess`** uploads too. Without it you lose the HTTPS redirect, caching and the custom 404.
-5. hPanel → **SSL** → confirm the certificate is issued and **Force HTTPS** is on.
-6. Visit `https://growthwithajay.com`.
+1. Use a Node.js host that supports Next.js server deployments.
+2. Set the build command to `npm run build` and the start command to `npm start`.
+3. Set the SMTP variables from `.env.example` in the host environment.
+4. Configure the domain and HTTPS in the hosting provider.
 
 ```
-public_html/
-├── index.html   404.html
-├── favicon.svg  favicon.ico  site.webmanifest
-├── robots.txt   sitemap.xml  .htaccess
-├── contact-handler.php        (optional, see §5)
-├── assets/{css,js,img}/
-├── services/{index, seo, paid-ads, brand-building, growth-marketing, marketing-automation}/
-├── work/  about/  contact/
+content/pages/       # page content consumed by the Next catch-all route
+app/                 # Next layouts, routes, and the contact API
+public/              # browser-served assets and metadata files
 ```
 
 ---
@@ -101,15 +93,7 @@ To dial the motion down, the simplest lever is `assets/css/style.css` → find `
 
 ## 5. Contact form
 
-**Default (already working):** the form composes a pre-filled email in the visitor's own mail app. Works on any host, nothing to configure.
-
-**Server-side, no redirect:**
-
-1. `contact-handler.php` → set `TO_EMAIL` and `FROM_EMAIL` to addresses on your domain.
-2. `assets/js/main.js` → change `var USE_PHP = false;` to `true`.
-3. Re-upload both and send yourself a test.
-
-If Hostinger's `mail()` lands in spam, switch to Brevo, Resend or SendGrid — or point the form at Formspree / Web3Forms, a one-line change.
+The form posts `multipart/form-data` to `/api/contact`. Configure `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, `CONTACT_FROM`, and `CONTACT_TO` before testing delivery. Without SMTP configuration, the API returns a clear configuration error instead of silently falling back to PHP or a mail client.
 
 ---
 
@@ -131,9 +115,9 @@ Unique title, meta description and H1 per page · canonicals · Open Graph and T
 
 ## 7. Editing
 
-Plain HTML — open any `index.html` and edit the text. Two things to know:
+Page content is kept as HTML fragments under `content/pages/` and rendered by Next.js. Two things to know:
 
-- **Nav and footer are repeated in all 10 files.** Change a link in one, change it in all (File Manager has search; VS Code has find-in-files).
+- **Nav and footer are repeated in all 10 content files.** Change a link in one, change it in all with VS Code find-in-files.
 - **Section headings use `.kin` spans** for the line-by-line reveal:
   ```html
   <span class="kin"><i>First line</i></span>

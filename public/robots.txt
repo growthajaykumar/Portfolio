@@ -1,9 +1,6 @@
 User-agent: *
 Allow: /
 
-# Block nothing important — this is a small marketing site.
-Disallow: /contact-handler.php
-
 # AI / LLM crawlers — remove any line below to allow that crawler.
 User-agent: GPTBot
 Allow: /

@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const root = process.cwd();
+const contentRoot = path.join(process.cwd(), 'content', 'pages');
 
 const routes = {
   '': 'index.html',
@@ -16,6 +16,8 @@ const routes = {
   'services/paid-ads': 'services/paid-ads/index.html',
   'services/seo': 'services/seo/index.html'
 };
+
+export const dynamicParams = false;
 
 function decodeMetadata(value) {
   return value
@@ -31,7 +33,7 @@ function readPage(route) {
   const source = routes[route];
   if (!source) return null;
 
-  const html = fs.readFileSync(path.join(root, source), 'utf8');
+  const html = fs.readFileSync(path.join(contentRoot, source), 'utf8');
   const head = html.match(/<head[^>]*>([\s\S]*?)<\/head>/i)?.[1] || '';
   const body = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i)?.[1] || '';
 
@@ -48,6 +50,12 @@ export async function generateMetadata({ params }) {
   if (!page) return {};
 
   return { title: page.title, description: page.description };
+}
+
+export function generateStaticParams() {
+  return Object.keys(routes).map((route) => ({
+    slug: route ? route.split('/') : []
+  }));
 }
 
 export default async function Page({ params }) {
