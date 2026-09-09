@@ -235,6 +235,38 @@
     })();
   }
 
+  /* ------------------------------------------------ 10b. Automation flow log */
+  var flow = document.querySelector('[data-flow]');
+  if (flow) {
+    var flowLog = document.querySelector('.flow__log-line');
+    var flowSteps = [
+      'Form submitted…',
+      'AI agent scoring intent…',
+      'CRM record updated…',
+      'Slack alert sent to sales…',
+      'Follow-up scheduled — done.'
+    ];
+    var flowIdx = 0, flowTimer = null;
+    var flowStep = function () {
+      if (flowLog) flowLog.textContent = flowSteps[flowIdx % flowSteps.length];
+      flowIdx++;
+    };
+    var flowStart = function () {
+      if (flowTimer) return;
+      flowStep();
+      if (REDUCED) return;
+      flowTimer = setInterval(flowStep, 1100);
+    };
+    var flowStop = function () { clearInterval(flowTimer); flowTimer = null; };
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (en) {
+        en.forEach(function (e) { e.isIntersecting ? flowStart() : flowStop(); });
+      }, { threshold: 0.35 }).observe(flow);
+    } else {
+      flowStart();
+    }
+  }
+
   /* ------------------------------------------------ 11. Mobile menu */
   var burger = document.querySelector('.burger');
   var mobile = document.querySelector('.mobile');
