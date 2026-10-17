@@ -37,9 +37,9 @@ public/              # browser-served assets and metadata files
 
 | Find | Replace with | Where |
 |---|---|---|
-| `ajay@growthwithajay.com` | your real inbox | every page + `contact-handler.php` |
-| `910000000000` | WhatsApp number, country code, no `+` or spaces | every page |
-| `+91 00000 00000` | display version | `contact/index.html` |
+| `growth.ajaykumar@gmail.com` | your real inbox | every page + `contact-handler.php` |
+| `918188878005` | WhatsApp number, country code, no `+` or spaces | every page |
+| `+91 81888 78005` | display version | `contact/index.html` |
 | `https://www.linkedin.com/in/ajaykumar` | your LinkedIn | every page |
 | `https://x.com/growthwithajay` | your X (or delete the link) | every page |
 | `https://www.instagram.com/growthwithajay` | your Instagram (or delete) | every page |
