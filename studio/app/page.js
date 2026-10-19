@@ -4,7 +4,6 @@ import Btn from '../components/Btn';
 import Mark from '../components/Mark';
 import JsonLd from '../components/JsonLd';
 import Ledger from '../components/Ledger';
-import Ticker from '../components/Ticker';
 import Markets from '../components/Markets';
 import ServiceIndex from '../components/ServiceIndex';
 import FlowDemo from '../components/FlowDemo';
@@ -60,8 +59,6 @@ export default function Home() {
         <div className="shell"><Ledger stats={hero.stats} className="ledger--hero" /></div>
       </section>
 
-      <Ticker marquee={home.marquee} />
-
       {/* 02 — Thesis: one sentence, given the whole page */}
       <section className="thesis shell">
         <Mark n={1} label={thesis.label} />
@@ -108,8 +105,6 @@ export default function Home() {
         <SectionHead n={6} label={process.label} title={process.title} />
         <Staircase steps={process.steps} />
       </section>
-
-      <Ticker marquee={home.marquee2} big reverse />
 
       <Faq faq={home.faq} n={7} />
       <Cta cta={site.cta} />

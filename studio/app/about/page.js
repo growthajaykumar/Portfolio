@@ -5,7 +5,6 @@ import Mark from '../../components/Mark';
 import JsonLd from '../../components/JsonLd';
 import PageHero from '../../components/PageHero';
 import SectionHead from '../../components/SectionHead';
-import Ticker from '../../components/Ticker';
 import Faq from '../../components/Faq';
 import Cta from '../../components/Cta';
 
@@ -32,8 +31,6 @@ export default function About() {
           <Btn link={profile.button} variant="solid" className="btn--sm" />
         </aside>
       </section>
-
-      {page.marquee && <Ticker marquee={page.marquee} big />}
 
       <section className="sec shell">
         <SectionHead n={2} label={path.label} title={path.title} />

@@ -18,6 +18,7 @@ PAGES = {"/": "index.html", "/services/": "services/index.html", "/work/": "work
          "/about/": "about/index.html", "/contact/": "contact/index.html", "/__missing__/": "404.html",
          **{f"/services/{s}/": f"services/{s}/index.html" for s in ["seo", "paid-ads", "brand-building", "growth-marketing", "marketing-automation"]}}
 SKIP_TAGS = {"script", "style", "svg", "noscript", "head", "canvas"}
+# aria-hidden nodes in the original (e.g. the decorative marquees) are ornament, not content, and are not required
 
 def norm(s): return re.sub(r"\s+", " ", html.unescape(s)).strip()
 
@@ -26,7 +27,7 @@ def text_runs(node, out):
         if isinstance(c, str):
             t = norm(c)
             if t: out.append(t)
-        elif c.tag not in SKIP_TAGS:
+        elif c.tag not in SKIP_TAGS and c.attrs.get("aria-hidden") != "true":
             text_runs(c, out)
 
 def all_text(node):

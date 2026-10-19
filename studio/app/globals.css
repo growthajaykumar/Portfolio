@@ -225,17 +225,6 @@ img, svg { display: block; max-width: 100%; }
 }
 .ledger--hero { margin-bottom: clamp(28px, 3.6vw, 52px); }
 
-/* ---------- ticker ---------- */
-.ticker { overflow: hidden; border-block: 1px solid var(--ink); background: var(--ink); color: var(--bone); }
-.ticker__track { display: flex; width: max-content; animation: tick 60s linear infinite; }
-.ticker--rev .ticker__track { animation-direction: reverse; animation-duration: 70s; }
-.ticker__item { display: inline-flex; align-items: center; gap: 1.6rem; padding: 14px 1.6rem 14px 0; font: 500 var(--t0) var(--mono); letter-spacing: .14em; text-transform: uppercase; white-space: nowrap; }
-.ticker__item::after { content: ""; width: 7px; height: 7px; background: var(--signal); }
-.ticker--big { background: var(--paper); color: var(--ink); border-color: var(--rule-2); }
-.ticker--big .ticker__item { font: italic 400 var(--fs-num)/1.15 var(--serif); letter-spacing: -.02em; text-transform: none; padding-block: 10px; gap: 2.4rem; padding-right: 2.4rem; }
-.ticker--big .ticker__item::after { width: .32em; height: .32em; border-radius: 50%; background: var(--signal-ink); }
-@keyframes tick { to { transform: translateX(-50%); } }
-@media (prefers-reduced-motion: reduce) { .ticker__track { animation: none; } }
 
 /* ==========================================================================
    Section scaffolding
