@@ -1,27 +1,33 @@
-import Script from 'next/script';
+import './globals.css';
+import site from '../lib/site';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+import Choreo from '../components/Choreo';
 
-export const metadata = {
-  metadataBase: new URL('https://growthwithajay.com'),
-  title: 'Growth with Ajay',
-  description: 'Growth marketing consultant across Web3, real estate and fashion.'
-};
+export const metadata = { metadataBase: new URL('https://growthwithajay.com') };
+export const viewport = { themeColor: '#EEEAE1' };
+
+const FONTS = 'https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&family=Geist:wght@300..700&family=Instrument+Serif:ital@0;1&display=swap';
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className="no-js">
+    <html lang="en">
       <head>
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-        <link rel="alternate icon" href="/favicon.ico" />
+        <link rel="alternate icon" href="/assets/favicon.ico" />
         <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" />
         <link rel="manifest" href="/site.webmanifest" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300..800&family=Archivo:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" />
-        <link rel="stylesheet" href="/assets/css/style.css" />
+        <link rel="stylesheet" href={FONTS} />
+        {/* Reveal animations only arm once JS is running; without JS everything is visible. */}
+        <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
       </head>
       <body>
-        {children}
-        <Script src="/assets/js/main.js" strategy="afterInteractive" />
+        <Header nav={site.nav} />
+        <main id="main">{children}</main>
+        <Footer nav={site.nav} footer={site.footer} />
+        <Choreo />
       </body>
     </html>
   );

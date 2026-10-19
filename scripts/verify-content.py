@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Content-preservation check: every text fragment, link, meta tag and JSON-LD block in the
-original pages (../content/pages) must appear unchanged in the rendered redesign.
+original pages (legacy/content/pages) must appear unchanged in the rendered redesign.
 
     npm run build && npm start     # in another terminal
     python3 scripts/verify-content.py [http://localhost:3200]
@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 from dom import parse
 
 BASE = (sys.argv[1] if len(sys.argv) > 1 else "http://localhost:3200").rstrip("/")
-ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "..", "content", "pages"))
+ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "legacy", "content", "pages"))
 PAGES = {"/": "index.html", "/services/": "services/index.html", "/work/": "work/index.html",
          "/about/": "about/index.html", "/contact/": "contact/index.html", "/__missing__/": "404.html",
          **{f"/services/{s}/": f"services/{s}/index.html" for s in ["seo", "paid-ads", "brand-building", "growth-marketing", "marketing-automation"]}}

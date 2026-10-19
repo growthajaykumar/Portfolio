@@ -1,17 +1,19 @@
 {
-  "name": "growth-with-ajay",
+  "name": "growth-with-ajay-studio",
   "version": "1.0.0",
   "private": true,
+  "description": "Redesigned Growth with Ajay site. Content is generated from ../content/pages by scripts/extract-content.py.",
   "scripts": {
-    "dev": "next dev",
+    "content": "python3 scripts/extract-content.py",
+    "dev": "next dev -p 3200",
     "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "start": "next start -p 3200",
+    "verify": "python3 scripts/verify-content.py"
   },
   "dependencies": {
-    "next": "latest",
+    "next": "16.3.4",
     "nodemailer": "^10.0.1",
-    "react": "latest",
-    "react-dom": "latest"
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
   }
 }

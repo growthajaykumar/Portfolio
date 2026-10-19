@@ -1,7 +1,7 @@
-# Growth with Ajay — Studio redesign
+# Growth with Ajay
 
-A ground-up redesign of growthwithajay.com, built as its own Next.js app inside this repo.
-The original site (repo root: `app/`, `content/pages/`, `public/`) is untouched.
+The live site: a ground-up redesign of growthwithajay.com (Next.js). The previous site is preserved,
+unchanged, in `legacy/` — it is also the source the content is generated from.
 
 ## Design direction — "Operator's Ledger"
 
@@ -20,8 +20,8 @@ operator's ledger rather than an agency template:
 
 ## Content is never retyped
 
-`scripts/extract-content.py` parses the original pages in `../content/pages/` (plus the flow-log and
-form-status strings in `../public/assets/js/main.js`) into `content/site.json`. Every page renders only
+`scripts/extract-content.py` parses the original pages in `legacy/content/pages/` (plus the flow-log and
+form-status strings in `legacy/public/assets/js/main.js`) into `content/site.json`. Every page renders only
 from that file, so wording, numbers, links, SEO meta and JSON-LD are copied mechanically.
 `scripts/verify-content.py` then checks the rendered site against the originals (2,331 checks:
 every text fragment, link, meta value and JSON-LD block).
@@ -31,7 +31,6 @@ If the original copy changes: `npm run content`, rebuild, `npm run verify`.
 ## Run
 
 ```bash
-cd studio
 npm install
 npm run dev            # http://localhost:3200
 npm run build && npm start
@@ -49,7 +48,7 @@ form falls back to opening the visitor's email app, exactly like the current sit
 ## Structure
 
 ```
-studio/
+  legacy/              the previous site, untouched (content source + history)
   app/                 routes: /, /services/, /services/[slug]/, /work/, /about/, /contact/, 404, /api/contact/
   components/          Header, Footer, PageHero, Ledger, Markets, ServiceIndex, FlowDemo, Dossiers, Staircase, Faq, Cta, ContactForm…
   content/site.json    generated content (do not edit by hand)
@@ -66,5 +65,6 @@ and market columns, native `<details>` for FAQs. All reveal/count/ticker/wave mo
 
 ## Deploying
 
-Not deployed. To ship it, point the host's root directory at `studio/` (build `npm run build`, start
-`npm start`), or move its contents to the repo root in a separate change.
+The repo root is the site: build `npm run build`, start `npm start` (or deploy on a Next.js host such as Vercel
+with the root directory left at `/`). Set the SMTP variables from `.env.example` in the host's environment
+so the contact form can send mail.
