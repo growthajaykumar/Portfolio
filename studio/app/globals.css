@@ -632,15 +632,13 @@ a.channels__a:hover .channels__ico { background: var(--signal); border-color: va
   .js [data-reveal] { opacity: 1; transform: none; }
 }
 
-/* ---------- hero operations map (OpsMap) ---------- */
+/* ---------- hero operations map (OpsMap) — drawn straight on the paper ---------- */
 .ops {
-  position: relative; margin-block: clamp(36px, 5vw, 72px) clamp(36px, 5vw, 64px);
-  height: clamp(420px, 52vw, 800px); background: #07080A; overflow: hidden; perspective: 1500px;
+  position: relative; margin-block: clamp(24px, 4vw, 56px) clamp(24px, 4vw, 48px);
+  height: clamp(420px, 52vw, 800px); overflow: hidden; perspective: 1500px;
+  -webkit-mask-image: radial-gradient(130% 100% at 50% 50%, #000 62%, transparent 100%);
+  mask-image: radial-gradient(130% 100% at 50% 50%, #000 62%, transparent 100%);
 }
-.ops::after { content: ""; position: absolute; inset: 0; pointer-events: none;
-  background:
-    radial-gradient(120% 90% at 50% 50%, transparent 55%, rgba(7, 8, 10, .85) 100%),
-    linear-gradient(90deg, var(--paper) 0, transparent 6%, transparent 94%, var(--paper) 100%); }
 .ops__screen {
   position: absolute; inset: -2% -3%;
   transform: rotateX(var(--rx, 13deg)) rotateY(var(--ry, -7deg)) rotateZ(-1.6deg);

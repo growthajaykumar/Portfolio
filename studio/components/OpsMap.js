@@ -9,16 +9,18 @@ import { useEffect, useRef } from 'react';
  * All labels are existing site copy, passed in as plain text. Decorative: aria-hidden.
  */
 const W = 1600, H = 920;
+// Paper theme: ink structure, one lime signal, deep print-like cluster colours that read on bone.
 const C = {
-  core: '#D7FF3B', web3: '#5FF2D6', estate: '#FFC94A', fashion: '#FF6FB5', services: '#8C9BFF', flow: '#FFB04A', white: '#F4F1E8',
+  core: '#121310', lime: '#C8F01E', web3: '#0B8F7A', estate: '#B87908', fashion: '#C8327A', services: '#3F4FC9', flow: '#D2660C', ink: '#121310', paper: '#EEEAE1',
 };
+const fade = (hex) => hex + '00';
 
 /* deterministic PRNG so the drawing is identical on every load */
 function rng(seed) { let s = seed >>> 0; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); }
 
 function buildGraph(d) {
   const core = { id: 'core', x: 800, y: 450, kind: 'core', label: d.core, color: C.core };
-  const agents = { id: 'agents', x: 960, y: 372, kind: 'terminal', label: d.agents, color: C.white };
+  const agents = { id: 'agents', x: 960, y: 372, kind: 'terminal', label: d.agents, color: C.lime };
   const hubs = [
     { id: 'services', x: 610, y: 262, label: d.servicesLabel, color: C.services, glyph: 'maze', leaves: d.services, pos: [[372, 104], [505, 74], [642, 66], [780, 76], [912, 104]] },
     { id: 'web3', x: 1085, y: 268, label: d.web3.title, color: C.web3, glyph: 'rosette', leaves: d.web3.leaves, pos: [[1215, 112], [1368, 150], [1478, 270], [1478, 408], [1372, 512]] },
@@ -110,9 +112,13 @@ export default function OpsMap({ data }) {
       g.addColorStop(0, color); g.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.globalAlpha = a; ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); ctx.globalAlpha = 1;
     };
+    const dot = (x, y, r, fill, ring) => {
+      ctx.fillStyle = fill; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
+      if (ring) { ctx.strokeStyle = ring; ctx.lineWidth = lw(1.2); ctx.beginPath(); ctx.arc(x, y, r + 4, 0, 7); ctx.stroke(); }
+    };
     const label = (txt, x, y, color, size = 17, weight = 600, align = 'center') => {
       ctx.font = `${weight} ${size}px ${font}`; ctx.textAlign = align; ctx.textBaseline = 'top';
-      ctx.shadowColor = color; ctx.shadowBlur = 10 * s; ctx.fillStyle = color; ctx.fillText(txt, x, y); ctx.shadowBlur = 0;
+      ctx.lineWidth = lw(4); ctx.strokeStyle = 'rgba(238,234,225,.9)'; ctx.lineJoin = 'round'; ctx.strokeText(txt, x, y); ctx.fillStyle = color; ctx.fillText(txt, x, y);
     };
 
     /* ---------- glyphs ---------- */
@@ -127,23 +133,23 @@ export default function OpsMap({ data }) {
       ctx.globalAlpha = 0.55;
       for (let k = 0; k < 6; k++) { const a = rot + (k * Math.PI) / 3; ctx.beginPath(); ctx.moveTo(n.x, n.y); ctx.lineTo(n.x + Math.cos(a) * R * 1.12, n.y + Math.sin(a) * R * 0.96); ctx.stroke(); }
       ctx.globalAlpha = 1;
-      for (let k = 0; k < 6; k++) { const a = rot + (k * Math.PI) / 3 + 0.5; glowDot(n.x + Math.cos(a) * R * 0.5, n.y + Math.sin(a) * R * 0.43, 7, n.color, 0.9); }
+      for (let k = 0; k < 6; k++) { const a = rot + (k * Math.PI) / 3 + 0.5; dot(n.x + Math.cos(a) * R * 0.5, n.y + Math.sin(a) * R * 0.43, 3, C.ink); }
       const p = 0.75 + Math.sin(t * 2.2) * 0.25;
-      glowDot(n.x, n.y, 46 * p, n.color, 0.55); glowDot(n.x, n.y, 12, '#ffffff', 0.95);
-      label(n.label, n.x, n.y + R + 10, n.color, 21, 700);
+      glowDot(n.x, n.y, 46 * p, C.lime, 0.75); ctx.fillStyle = C.ink; ctx.beginPath(); ctx.arc(n.x, n.y, 8, 0, 7); ctx.fill();
+      label(n.label, n.x, n.y + R + 10, C.ink, 24, 700);
     }
     function drawHub(n, t, hot) {
-      glowDot(n.x, n.y, hot ? 54 : 40, n.color, hot ? 0.45 : 0.22);
-      ctx.fillStyle = '#121318'; ctx.beginPath(); ctx.arc(n.x, n.y, 22, 0, 7); ctx.fill();
+      glowDot(n.x, n.y, hot ? 50 : 38, n.color, hot ? 0.28 : 0.1);
+      ctx.fillStyle = C.ink; ctx.beginPath(); ctx.arc(n.x, n.y, 22, 0, 7); ctx.fill();
       ctx.strokeStyle = n.color; ctx.lineWidth = lw(hot ? 2.4 : 1.6); ctx.beginPath(); ctx.arc(n.x, n.y, 22, 0, 7); ctx.stroke();
       ctx.globalAlpha = 0.5; ctx.setLineDash([lw(3), lw(5)]); ctx.beginPath(); ctx.arc(n.x, n.y, 30, t * 0.5, t * 0.5 + 6.28); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
-      ctx.fillStyle = C.white; ctx.beginPath(); ctx.moveTo(n.x - 9, n.y - 6); ctx.lineTo(n.x - 3, n.y - 6); ctx.lineTo(n.x - 1, n.y - 3); ctx.lineTo(n.x + 9, n.y - 3); ctx.lineTo(n.x + 9, n.y + 8); ctx.lineTo(n.x - 9, n.y + 8); ctx.closePath(); ctx.fill();
-      label(n.label, n.x, n.y + 34, n.color, 15, 600);
+      ctx.fillStyle = C.paper; ctx.beginPath(); ctx.moveTo(n.x - 9, n.y - 6); ctx.lineTo(n.x - 3, n.y - 6); ctx.lineTo(n.x - 1, n.y - 3); ctx.lineTo(n.x + 9, n.y - 3); ctx.lineTo(n.x + 9, n.y + 8); ctx.lineTo(n.x - 9, n.y + 8); ctx.closePath(); ctx.fill();
+      label(n.label, n.x, n.y + 34, n.color, 17, 700);
     }
     function drawTerminal(n, t) {
       const p = 0.8 + Math.sin(t * 3) * 0.2;
-      glowDot(n.x, n.y, 30 * p, '#ffffff', 0.35); ctx.fillStyle = '#FFF9E6'; ctx.beginPath(); ctx.arc(n.x, n.y, 11, 0, 7); ctx.fill();
-      label(n.label, n.x + 22, n.y - 9, C.white, 15, 600, 'left');
+      glowDot(n.x, n.y, 28 * p, C.lime, 0.8); ctx.fillStyle = C.ink; ctx.beginPath(); ctx.arc(n.x, n.y, 10, 0, 7); ctx.fill(); ctx.fillStyle = C.lime; ctx.beginPath(); ctx.arc(n.x, n.y, 3.5, 0, 7); ctx.fill();
+      label(n.label, n.x + 22, n.y - 10, C.ink, 17, 700, 'left');
     }
     function drawLeaf(n, t, hot) {
       const k = hot ? 1 : 0.82, R = n.big ? 50 : 40;
@@ -159,14 +165,14 @@ export default function OpsMap({ data }) {
           ctx.beginPath(); ctx.moveTo(x2, y2 - 4); ctx.lineTo(x2 + 4, y2); ctx.lineTo(x2, y2 + 4); ctx.lineTo(x2 - 4, y2); ctx.closePath(); ctx.stroke();
         }
         ctx.beginPath(); ctx.arc(n.x, n.y, R * 0.78, 0, 7); ctx.globalAlpha = k * 0.35; ctx.stroke(); ctx.globalAlpha = k;
-        glowDot(n.x, n.y, 24, n.color, 0.6); ctx.fillStyle = n.color; ctx.beginPath(); ctx.arc(n.x, n.y, 9 + Math.sin(t * 2 + n.phase) * 1.5, 0, 7); ctx.fill();
+        glowDot(n.x, n.y, 22, n.color, 0.22); ctx.fillStyle = n.color; ctx.beginPath(); ctx.arc(n.x, n.y, 9 + Math.sin(t * 2 + n.phase) * 1.5, 0, 7); ctx.fill();
       } else if (n.glyph === 'sphere') {
         const a = t * 0.45 + n.phase, ca = Math.cos(a), sa = Math.sin(a), tilt = 0.35, ct = Math.cos(tilt), st = Math.sin(tilt);
         const proj = n.pts.map(([x, y, z]) => { const x1 = x * ca + z * sa, z1 = -x * sa + z * ca; const y1 = y * ct - z1 * st, z2 = y * st + z1 * ct; return [n.x + x1 * R, n.y + y1 * R, z2]; });
         ctx.strokeStyle = n.color; ctx.lineWidth = lw(1);
         n.links.forEach(([i, j]) => { ctx.globalAlpha = k * 0.45; ctx.beginPath(); ctx.moveTo(proj[i][0], proj[i][1]); ctx.lineTo(proj[j][0], proj[j][1]); ctx.stroke(); });
         proj.forEach(([x, y, z]) => { ctx.globalAlpha = k * (0.35 + (z + 1) * 0.32); ctx.fillStyle = n.color; ctx.beginPath(); ctx.arc(x, y, 1.6 + (z + 1) * 1.1, 0, 7); ctx.fill(); });
-        ctx.globalAlpha = k; n.sats.forEach((i) => glowDot(proj[i][0], proj[i][1], 12, n.color, 0.8));
+        ctx.globalAlpha = k; n.sats.forEach((i) => dot(proj[i][0], proj[i][1], 4.2, n.color, n.color));
       } else if (n.glyph === 'radar') {
         ctx.fillStyle = n.color;
         for (let ring = 1; ring <= 4; ring++) {
@@ -175,14 +181,14 @@ export default function OpsMap({ data }) {
         }
         const sw = t * 1.7 + n.phase;
         const g = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, R * 1.05);
-        g.addColorStop(0, n.color); g.addColorStop(1, 'rgba(255,111,181,0)');
+        g.addColorStop(0, n.color); g.addColorStop(1, fade(n.color));
         ctx.globalAlpha = k * 0.55; ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(n.x, n.y); ctx.arc(n.x, n.y, R * 1.05, sw - 0.6, sw); ctx.closePath(); ctx.fill();
         ctx.globalAlpha = k; ctx.strokeStyle = n.color; ctx.lineWidth = lw(2);
         ctx.beginPath(); ctx.moveTo(n.x, n.y); ctx.lineTo(n.x + Math.cos(sw) * R * 1.25, n.y + Math.sin(sw) * R * 1.25); ctx.stroke();
         const beam = ctx.createLinearGradient(n.x, n.y, n.x, n.y + R * 1.6);
-        beam.addColorStop(0, n.color); beam.addColorStop(1, 'rgba(255,111,181,0)');
+        beam.addColorStop(0, n.color); beam.addColorStop(1, fade(n.color));
         ctx.globalAlpha = k * (0.5 + Math.sin(t * 3 + n.phase) * 0.2); ctx.fillStyle = beam; ctx.fillRect(n.x - 2.5, n.y, 5, R * 1.6);
-        glowDot(n.x, n.y, 14, n.color, 0.9);
+        dot(n.x, n.y, 4.5, n.color, n.color);
       } else if (n.glyph === 'maze') {
         const m = n.maze, cell = (R * 1.7) / m.n, x0 = n.x - (cell * m.n) / 2, y0 = n.y - (cell * m.n) / 2;
         ctx.strokeStyle = n.color; ctx.lineWidth = lw(1.3); ctx.globalAlpha = k * 0.5;
@@ -192,18 +198,18 @@ export default function OpsMap({ data }) {
         ctx.globalAlpha = k; ctx.lineWidth = lw(2.2); ctx.beginPath();
         for (let i = Math.max(0, head - 7); i <= head; i++) { const [cx, cy] = m.path[i]; const px = x0 + (cx + 0.5) * cell, py = y0 + (cy + 0.5) * cell; i === Math.max(0, head - 7) ? ctx.moveTo(px, py) : ctx.lineTo(px, py); }
         ctx.stroke();
-        const [hx, hy] = m.path[head]; glowDot(x0 + (hx + 0.5) * cell, y0 + (hy + 0.5) * cell, 12, n.color, 0.95);
+        const [hx, hy] = m.path[head]; dot(x0 + (hx + 0.5) * cell, y0 + (hy + 0.5) * cell, 4, n.color, n.color);
       } else if (n.glyph === 'wave') {
         const ph = t * 3.2 + n.phase;
-        ctx.strokeStyle = n.color; ctx.lineWidth = lw(2.4); ctx.shadowColor = n.color; ctx.shadowBlur = 8 * s;
+        ctx.strokeStyle = n.color; ctx.lineWidth = lw(2.4);
         ctx.beginPath();
         for (let x = -38; x <= 38; x += 2) { const env = Math.cos((x / 38) * 1.57); const y = Math.sin(x * 0.16 + ph) * 15 * env; x === -38 ? ctx.moveTo(n.x + x, n.y + y) : ctx.lineTo(n.x + x, n.y + y); }
-        ctx.stroke(); ctx.shadowBlur = 0;
-        glowDot(n.x - 38, n.y, 8, n.color, 0.9); glowDot(n.x + 38, n.y, 8, n.color, 0.9);
+        ctx.stroke();
+        dot(n.x - 38, n.y, 3.5, n.color); dot(n.x + 38, n.y, 3.5, n.color);
       }
       ctx.restore();
       const off = n.glyph === 'wave' ? 24 : (n.glyph === 'radar' ? R + 26 : R + 12);
-      label(n.label, n.x, n.y + off, n.color, n.big ? 17 : 15, 600);
+      label(n.label, n.x, n.y + off, n.color, n.big ? 19 : 17, 600);
     }
 
     /* ---------- edges + pulses ---------- */
@@ -224,33 +230,36 @@ export default function OpsMap({ data }) {
       if (!reduce) G.edges.forEach((e) => { if (now > e.next) { spawn(e, now); e.next = now + 1800 + Math.random() * 4200; } });
 
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.fillStyle = '#07080A'; ctx.fillRect(0, 0, cw, ch);
+      ctx.clearRect(0, 0, cw, ch);
       ctx.setTransform(dpr * s, 0, 0, dpr * s, dpr * ox, dpr * oy);
 
       // big grid
-      ctx.strokeStyle = 'rgba(160,170,190,.07)'; ctx.lineWidth = lw(1);
-      ctx.beginPath(); for (let x = -480; x <= W + 480; x += 160) { ctx.moveTo(x, -300); ctx.lineTo(x, H + 300); } for (let y = -320; y <= H + 320; y += 160) { ctx.moveTo(-480, y); ctx.lineTo(W + 480, y); } ctx.stroke();
+      const gg = ctx.createRadialGradient(800, 470, 120, 800, 470, 860); gg.addColorStop(0, 'rgba(18,19,16,.09)'); gg.addColorStop(0.7, 'rgba(18,19,16,.05)'); gg.addColorStop(1, 'rgba(18,19,16,0)');
+      ctx.strokeStyle = gg; ctx.lineWidth = lw(1);
+      ctx.beginPath(); for (let x = -1600; x <= W + 1600; x += 160) { ctx.moveTo(x, -1200); ctx.lineTo(x, H + 1200); } for (let y = -1200; y <= H + 1200; y += 160) { ctx.moveTo(-1600, y); ctx.lineTo(W + 1600, y); } ctx.stroke();
 
       // edges
       G.edges.forEach((e) => {
         const hot = spot && e.hub === spot;
-        ctx.strokeStyle = hot ? e.color : 'rgba(230,230,240,.32)'; ctx.globalAlpha = hot ? 0.85 : 1; ctx.lineWidth = lw(hot ? 1.8 : 1.2);
+        ctx.strokeStyle = hot ? e.color : 'rgba(18,19,16,.34)'; ctx.globalAlpha = hot ? 0.85 : 1; ctx.lineWidth = lw(hot ? 1.8 : 1.2);
         ctx.beginPath(); ctx.moveTo(e.a.x, e.a.y); ctx.quadraticCurveTo(e.cx, e.cy, e.b.x, e.b.y); ctx.stroke(); ctx.globalAlpha = 1;
         // little relay dots along the wire
-        [0.33, 0.66].forEach((f) => { const [px, py] = e.pt(f); ctx.fillStyle = hot ? e.color : 'rgba(240,235,220,.55)'; ctx.beginPath(); ctx.arc(px, py, 2.4, 0, 7); ctx.fill(); });
+        [0.33, 0.66].forEach((f) => { const [px, py] = e.pt(f); ctx.fillStyle = hot ? e.color : 'rgba(18,19,16,.45)'; ctx.beginPath(); ctx.arc(px, py, 2.4, 0, 7); ctx.fill(); });
       });
 
       // pulses
-      ctx.globalCompositeOperation = 'lighter';
+      ctx.globalCompositeOperation = 'source-over';
       for (let i = pulses.length - 1; i >= 0; i--) {
         const p = pulses[i], f = (now - p.t0) / p.dur;
         if (f >= 1) { pulses.splice(i, 1); continue; }
-        for (let k = 7; k >= 0; k--) { const ff = f - k * 0.018; if (ff < 0) continue; const [x, y] = p.e.pt(ff); glowDot(x, y, k ? 9 - k : 16, k ? p.e.color : '#ffffff', k ? 0.5 - k * 0.05 : 0.95); }
+        for (let k = 8; k >= 1; k--) { const ff = f - k * 0.016; if (ff < 0) continue; const [x, y] = p.e.pt(ff); ctx.globalAlpha = 0.75 - k * 0.08; dot(x, y, 4 - k * 0.38, p.e.color === C.lime ? C.ink : p.e.color); }
+        ctx.globalAlpha = 1;
+        { const [x, y] = p.e.pt(f); glowDot(x, y, 14, C.lime, 0.9); dot(x, y, 4, C.ink); }
       }
       ctx.globalCompositeOperation = 'source-over';
 
       // nodes
-      ctx.globalCompositeOperation = 'lighter';
+      ctx.globalCompositeOperation = 'source-over';
       G.nodes.forEach((n) => {
         const hot = spot && (n.id === spot || n.id.startsWith(spot + '-'));
         if (n.kind === 'leaf') drawLeaf(n, t, hot);
