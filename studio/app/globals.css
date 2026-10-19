@@ -318,28 +318,65 @@ img, svg { display: block; max-width: 100%; }
 .run { background: var(--ink); color: var(--bone); padding-block: clamp(80px, 11vw, 150px); }
 .shead--ink .mark, .shead--ink .shead__lede { color: var(--bone-mute); }
 .shead--ink .mark__n { color: var(--signal); }
-.flow { border-top: 1px solid var(--rule-ink); }
-.flow__track { position: relative; display: grid; gap: 0; }
-.flow__node { position: relative; display: grid; grid-template-columns: 52px auto 1fr; align-items: center; gap: 16px; padding: 18px 0; border-bottom: 1px solid var(--rule-ink); color: var(--bone-mute); transition: color .4s var(--ease); }
-.flow__ico { display: grid; place-items: center; width: 52px; height: 52px; border: 1px solid var(--rule-ink); transition: background .4s var(--ease), border-color .4s var(--ease), color .4s; }
-.flow__ico svg { width: 20px; height: 20px; }
-.flow__n { font: 500 var(--t0) var(--mono); }
-.flow__label { font: 400 var(--t2)/1.1 var(--serif); }
-.flow__node.is-done { color: var(--bone); }
-.flow__node.is-on { color: var(--bone); }
-.flow__node.is-on .flow__ico { background: var(--signal); border-color: var(--signal); color: var(--ink); }
-.flow__log { display: flex; align-items: center; gap: .7rem; margin-top: 28px; padding: 18px 20px; border: 1px solid var(--rule-ink); font: 400 var(--t0) var(--mono); color: var(--bone); min-height: 3.4rem; }
-.flow__prompt { color: var(--signal); }
-.flow__caret { width: 8px; height: 1.1em; background: var(--signal); animation: blink 1s steps(2) infinite; }
-@keyframes blink { 50% { opacity: 0; } }
-@media (min-width: 1000px) {
-  .flow { border-top: 0; }
-  .flow__track { grid-template-columns: repeat(5, 1fr); padding-top: 40px; }
-  .flow__track::before, .flow__track::after { content: ""; position: absolute; left: 26px; right: calc(20% - 26px); top: 66px; height: 1px; background: var(--rule-ink); }
-  .flow__track::after { background: var(--signal); right: auto; width: calc((80% - 0px) * var(--p)); transition: width 1s var(--ease-io); }
-  .flow__node { grid-template-columns: 1fr; align-content: start; gap: 18px; padding: 0 20px 0 0; border: 0; }
-  .flow__ico { position: relative; z-index: 1; background: var(--ink); }
+/* "See it run" pipeline — ported from the original site (main), accent switched copper -> lime */
+.run { --f-line: rgba(234, 230, 222, .17); }
+.flow { position: relative; margin-top: clamp(8px, 1.5vw, 16px); }
+.flow__wires { position: absolute; left: 0; top: 13px; width: 100%; height: 40px; display: none; pointer-events: none; }
+@media (min-width: 760px) { .flow__wires { display: block; } }
+.flow__wire { fill: none; stroke: var(--f-line); stroke-width: 1.5; }
+.flow__dot {
+  position: absolute; top: 0; left: 0; width: 9px; height: 9px; margin: -4.5px; border-radius: 50%;
+  background: var(--signal); box-shadow: 0 0 8px var(--signal), 0 0 20px rgba(215, 255, 59, .6);
+  display: none; pointer-events: none; offset-distance: 0%; offset-rotate: 0deg; opacity: 0;
 }
+@media (min-width: 760px) { .flow__dot { display: block; } }
+@media (min-width: 760px) and (prefers-reduced-motion: no-preference) { .flow__dot { animation: flowTravel 5.5s linear infinite; } }
+@keyframes flowTravel { 0% { offset-distance: 0%; opacity: 0; } 4% { opacity: 1; } 92% { opacity: 1; } 100% { offset-distance: 100%; opacity: 0; } }
+
+.flow__nodes { position: relative; display: flex; flex-direction: column; gap: 14px; z-index: 1; }
+.flow__nodes::before { content: ""; position: absolute; left: 24px; top: 22px; bottom: 22px; width: 1px; background: var(--f-line); z-index: 0; }
+@media (min-width: 760px) {
+  .flow__nodes { flex-direction: row; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .flow__nodes::before { display: none; }
+}
+.flow__node {
+  position: relative; z-index: 1; display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px; border: 1px solid var(--f-line); border-radius: 14px;
+  background: rgba(234, 230, 222, .02); min-width: 0;
+}
+@media (min-width: 760px) { .flow__node { flex-direction: column; text-align: center; gap: 10px; padding: 16px 8px; width: 18.5%; } }
+@media (prefers-reduced-motion: no-preference) { .flow__node { animation: flowNodeBorder 5.5s ease infinite; animation-delay: calc(var(--i) * 1.1s); } }
+@keyframes flowNodeBorder {
+  0%, 18%, 100% { border-color: var(--f-line); background: rgba(234, 230, 222, .02); }
+  6% { border-color: var(--signal); background: rgba(215, 255, 59, .07); }
+}
+.flow__ico {
+  flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center;
+  border: 1px solid var(--f-line); color: #8C8A82; background: #161713;
+}
+.flow__ico svg { width: 17px; height: 17px; }
+@media (prefers-reduced-motion: no-preference) { .flow__ico { animation: flowIcoGlow 5.5s ease infinite; animation-delay: calc(var(--i) * 1.1s); } }
+@keyframes flowIcoGlow {
+  0%, 18%, 100% { border-color: var(--f-line); color: #8C8A82; box-shadow: none; }
+  6% { border-color: var(--signal); color: var(--signal); box-shadow: 0 0 14px rgba(215, 255, 59, .55); }
+}
+.flow__label { font: 400 var(--t0)/1.3 var(--mono); letter-spacing: .03em; color: var(--bone-mute); }
+@media (prefers-reduced-motion: no-preference) { .flow__label { animation: flowLabelBrighten 5.5s ease infinite; animation-delay: calc(var(--i) * 1.1s); } }
+@keyframes flowLabelBrighten { 0%, 18%, 100% { color: var(--bone-mute); } 6% { color: var(--bone); } }
+
+.flow__log {
+  margin-top: clamp(22px, 3vw, 32px); display: inline-flex; align-items: center; gap: .65em; max-width: 100%;
+  padding: .7em 1.1em; border: 1px solid var(--f-line); border-radius: 999px;
+  background: rgba(234, 230, 222, .02); font: 400 var(--t0) var(--mono); color: #C7C2B8;
+}
+.flow__live { position: relative; width: 6px; height: 6px; border-radius: 50%; background: var(--signal); flex: none; }
+.flow__live::after { content: ""; position: absolute; inset: -5px; border-radius: 50%; border: 1px solid var(--signal); opacity: .5; }
+@media (prefers-reduced-motion: no-preference) { .flow__live::after { animation: flowPing 2.6s var(--ease) infinite; } }
+@keyframes flowPing { 0% { transform: scale(.6); opacity: .7; } 70%, 100% { transform: scale(1.6); opacity: 0; } }
+.flow__log-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.flow__caret { width: 7px; height: 1em; background: var(--signal); flex: none; }
+@media (prefers-reduced-motion: no-preference) { .flow__caret { animation: flowCaret 1s steps(2) infinite; } }
+@keyframes flowCaret { 50% { opacity: 0; } }
 
 /* ---------- dossiers (case studies) ---------- */
 .dossiers { display: grid; gap: 0; border-top: 1px solid var(--ink); }
