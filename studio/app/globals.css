@@ -632,79 +632,23 @@ a.channels__a:hover .channels__ico { background: var(--signal); border-color: va
   .js [data-reveal] { opacity: 1; transform: none; }
 }
 
-/* ---------- hero automation canvas (FlowCanvas) ---------- */
-.fc {
-  position: relative; margin-top: clamp(40px, 5vw, 72px); margin-bottom: clamp(36px, 5vw, 64px);
-  height: clamp(300px, 40vw, 600px); background: #1A1B17; overflow: hidden; perspective: 1400px;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+/* ---------- hero operations map (OpsMap) ---------- */
+.ops {
+  position: relative; margin-block: clamp(36px, 5vw, 72px) clamp(36px, 5vw, 64px);
+  height: clamp(420px, 52vw, 800px); background: #07080A; overflow: hidden; perspective: 1500px;
 }
-.fc::after { content: ""; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(180deg, var(--paper) 0%, transparent 14%, transparent 86%, var(--paper) 100%); opacity: .0; }
-.fc__stage {
-  position: absolute; left: 50%; top: 50%; width: max(100%, 1050px);
-  transform: translate(-53%, -50%) rotateX(16deg) rotateY(-9deg) rotateZ(-2.2deg) scale(.96);
-  transform-origin: 50% 50%;
+.ops::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(120% 90% at 50% 50%, transparent 55%, rgba(7, 8, 10, .85) 100%),
+    linear-gradient(90deg, var(--paper) 0, transparent 6%, transparent 94%, var(--paper) 100%); }
+.ops__screen {
+  position: absolute; inset: -2% -3%;
+  transform: rotateX(var(--rx, 13deg)) rotateY(var(--ry, -7deg)) rotateZ(-1.6deg);
+  transform-origin: 50% 50%; transition: transform 1.2s var(--ease);
 }
-.fc svg { display: block; width: 100%; height: auto; overflow: visible; font-family: var(--sans); }
-#fc-dots circle { fill: rgba(238, 234, 225, .16); }
-
-.fc__edge { fill: none; stroke: rgba(238, 234, 225, .32); stroke-width: 2; }
-.fc__lit { fill: none; stroke: var(--signal); stroke-width: 3.2; stroke-linecap: round; opacity: 0; filter: drop-shadow(0 0 6px rgba(215, 255, 59, .55)); }
-.fc__dash { fill: none; stroke: rgba(238, 234, 225, .3); stroke-width: 1.6; stroke-dasharray: 7 7; }
-@media (prefers-reduced-motion: no-preference) {
-  .fc__dash { animation: fcAnts 1.4s linear infinite; }
-  .fc__dash.is-think { animation-duration: .45s; }
+.ops canvas { display: block; width: 100%; height: 100%; }
+@media (max-width: 759px) {
+  .ops { height: 460px; }
+  .ops__screen { inset: -4% -30%; transform: rotateX(10deg) rotateY(-5deg) rotateZ(-1.5deg); }
 }
-.fc__dash.is-think { stroke: var(--signal); stroke-width: 2.2; }
-@keyframes fcAnts { to { stroke-dashoffset: -28; } }
-
-.fc__box { fill: #23241F; stroke: #45463F; stroke-width: 2; transition: stroke .25s, fill .25s; }
-.fc__node--card .fc__box { fill: #21221E; }
-.fc__ico { color: var(--bone-mute); transition: color .25s; }
-.fc__ico svg { stroke: currentColor; fill: none; overflow: visible; }
-.fc__ico svg[class] { stroke-width: 1.4; }
-.fc__title { fill: var(--bone); font: 500 24px var(--sans); letter-spacing: -.01em; }
-.fc__sub { fill: #9C9C91; font: 400 15px var(--mono); letter-spacing: .02em; }
-.fc__label { fill: var(--bone-mute); font: 500 17px var(--sans); }
-.fc__port { fill: #34352F; stroke: #5A5B53; stroke-width: 2; }
-.fc__diamond { fill: #34352F; stroke: #5A5B53; stroke-width: 2; }
-.fc__check { opacity: 0; transition: opacity .3s; }
-.fc__check circle { fill: var(--signal); }
-.fc__check { filter: drop-shadow(0 0 6px rgba(215, 255, 59, .6)); }
-.fc__check path { fill: none; stroke: var(--ink); stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
-
-.fc__node.is-run .fc__box { stroke: var(--signal); fill: #2B2D22; filter: drop-shadow(0 0 14px rgba(215, 255, 59, .35)); }
-.fc__node.is-run .fc__ico { color: var(--signal); }
-.fc__node.is-run .fc__label { fill: var(--bone); }
-.fc__node.is-run .fc__port, .fc__node.is-done .fc__port { stroke: var(--signal-ink); }
-.fc__node.is-done .fc__box { stroke: #6F7A35; }
-.fc__node.is-done .fc__ico { color: var(--bone); }
-.fc__node.is-done .fc__check { opacity: 1; }
-
-.fc__plus rect { fill: #23241F; stroke: #45463F; stroke-width: 2; }
-.fc__plus path { stroke: var(--bone-mute); stroke-width: 2.2; stroke-linecap: round; }
-
-.fc__modelring { fill: none; stroke: #45463F; stroke-width: 2; stroke-dasharray: 3 7; }
-.fc__modelcore { fill: #2A2B26; stroke: #5A5B53; stroke-width: 2; transition: fill .25s, stroke .25s; }
-.fc__modelglyph circle:first-child { fill: none; stroke: var(--bone-mute); stroke-width: 2; }
-.fc__modelglyph path { fill: none; stroke: var(--bone-mute); stroke-width: 2.2; stroke-linecap: round; }
-.fc__modelglyph circle:last-child { fill: var(--bone-mute); }
-.fc__modellabel { fill: var(--bone); font: 500 22px var(--sans); }
-.fc.is-thinking .fc__modelcore { fill: var(--signal); stroke: var(--signal); }
-.fc.is-thinking .fc__modelglyph circle:first-child, .fc.is-thinking .fc__modelglyph path { stroke: var(--ink); }
-.fc.is-thinking .fc__modelglyph circle:last-child { fill: var(--ink); }
-@media (prefers-reduced-motion: no-preference) {
-  .fc__modelring { animation: fcSpin 18s linear infinite; transform-box: fill-box; transform-origin: center; }
-  .fc.is-thinking .fc__modelring { stroke: var(--signal-ink); animation-duration: 3s; }
-}
-@keyframes fcSpin { to { transform: rotate(360deg); } }
-.fc__pkt { fill: var(--ink); stroke: var(--signal); stroke-width: 4; }
-
-@media (max-width: 899px) {
-  .fc__stage { width: 1080px; transform: translate(-51%, -50%) rotateX(14deg) rotateY(-8deg) rotateZ(-2deg) scale(.72); }
-}
-@media (max-width: 599px) {
-  .fc { height: 300px; }
-  .fc__stage { width: 1080px; transform: translate(-38%, -50%) rotateX(12deg) rotateY(-6deg) rotateZ(-2deg) scale(.62); }
-}
+@media (prefers-reduced-motion: reduce) { .ops__screen { transition: none; } }

@@ -1,4 +1,4 @@
-import site, { toMetadata } from '../lib/site';
+import site, { toMetadata, text } from '../lib/site';
 import H from '../components/H';
 import Btn from '../components/Btn';
 import Mark from '../components/Mark';
@@ -14,10 +14,24 @@ import SectionHead from '../components/SectionHead';
 import Faq from '../components/Faq';
 import Cta from '../components/Cta';
 import Wave from '../components/Wave';
-import FlowCanvas from '../components/FlowCanvas';
+import OpsMap from '../components/OpsMap';
 
 const home = site.home;
 export const metadata = toMetadata(home.meta);
+
+// Operations map data: plain-text labels taken from existing site copy.
+const [web3, estate, fashion] = home.industries.items;
+const opsData = {
+  core: text(home.marquee.items.find((m) => m === 'n8n Automation')),
+  agents: text(home.marquee.items.find((m) => m === 'AI Agents')),
+  servicesLabel: text(home.services.label),
+  services: site.footer.columns[0].links.map((l) => text(l.label)),
+  web3: { title: text(web3.title), leaves: web3.brands.map(text) },
+  estate: { title: text(estate.title), leaves: estate.brands.map(text) },
+  fashion: { title: text(fashion.title), leaves: [...fashion.brands, ...fashion.tags.filter((t) => ['D2C', 'Retail', 'Lifecycle'].includes(t))].map(text) },
+  flowLabel: text(home.flow.label),
+  flow: home.flow.nodes.map((n) => text(n.label)),
+};
 
 export default function Home() {
   const { hero, thesis, industries, services, flow, work, process } = home;
@@ -41,7 +55,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <FlowCanvas flow={flow} markets={industries.items} modelLabel={home.marquee.items.find((m) => m === 'AI Agents')} />
+        <OpsMap data={opsData} />
         <div className="shell"><Ledger stats={hero.stats} className="ledger--hero" /></div>
       </section>
 
