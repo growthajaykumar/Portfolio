@@ -13,7 +13,7 @@ export default function Markets({ items }) {
             <span className="market__n">{m.num}</span>
             {m.icon && <span className="market__ico" dangerouslySetInnerHTML={{ __html: m.icon }} />}
           </div>
-          <H as="h3" className="market__t" html={m.title} />
+          <h3 className="market__t"><H className="market__tt" html={m.title} /></h3>
           <div className="market__body">
             <H as="p" className="market__d" html={m.desc} />
             {m.brands?.length > 0 && (
