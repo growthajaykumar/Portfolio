@@ -14,6 +14,7 @@ import SectionHead from '../components/SectionHead';
 import Faq from '../components/Faq';
 import Cta from '../components/Cta';
 import Wave from '../components/Wave';
+import SignalWave from '../components/SignalWave';
 
 const home = site.home;
 export const metadata = toMetadata(home.meta);
@@ -40,7 +41,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <Wave id="wave-hero" className="hero__wave" />
+        <SignalWave className="hero__wave" />
         <div className="shell"><Ledger stats={hero.stats} className="ledger--hero" /></div>
       </section>
 

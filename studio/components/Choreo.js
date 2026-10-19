@@ -12,6 +12,15 @@ export default function Choreo() {
   const path = usePathname();
   useEffect(() => {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // SVG timeline animations (hero signal): frozen under reduced motion, paused while off-screen.
+    const sigs = [...document.querySelectorAll('.sig svg')];
+    let sio;
+    if (reduce) sigs.forEach((s) => s.pauseAnimations?.());
+    else if ('IntersectionObserver' in window) {
+      sio = new IntersectionObserver((es) => es.forEach((e) => (e.isIntersecting ? e.target.unpauseAnimations?.() : e.target.pauseAnimations?.())));
+      sigs.forEach((s) => sio.observe(s));
+    }
+
     const reveal = [...document.querySelectorAll('[data-reveal]:not(.is-in)')];
     const counts = [...document.querySelectorAll('[data-count]:not(.is-counted)')];
     if (reduce || !('IntersectionObserver' in window)) {
@@ -44,7 +53,7 @@ export default function Choreo() {
       });
     }, { threshold: 0.6 });
     counts.forEach((el) => co.observe(el));
-    return () => { io.disconnect(); co.disconnect(); };
+    return () => { io.disconnect(); co.disconnect(); sio?.disconnect(); };
   }, [path]);
   return null;
 }
