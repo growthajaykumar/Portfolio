@@ -241,8 +241,8 @@ export default function OpsMap({ data }) {
       ctx.setTransform(dpr * s, 0, 0, dpr * s, dpr * ox, dpr * oy);
 
       // ---- camera: level horizon, gentle orbit (yaw) + slight pitch, steered by the pointer ----
-      cam.yaw += ((reduce ? 0 : Math.sin(t * 0.22) * 0.13 + aim.x * 0.12) - cam.yaw) * 0.06;
-      cam.pitch += ((reduce ? 0 : Math.sin(t * 0.17) * 0.035 + aim.y * 0.06) - cam.pitch) * 0.06;
+      cam.yaw += ((reduce ? 0 : Math.sin(t * 0.22) * 0.19 + aim.x * 0.22) - cam.yaw) * 0.06;
+      cam.pitch += ((reduce ? 0 : Math.sin(t * 0.17) * 0.05 + aim.y * 0.1) - cam.pitch) * 0.06;
       const cy0 = Math.cos(cam.yaw), sy0 = Math.sin(cam.yaw), cp = Math.cos(cam.pitch), sp = Math.sin(cam.pitch), F = 1500;
       const project = (x, y, z) => {
         const dx = x - 800, dy = y - 460;
