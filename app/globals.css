@@ -684,3 +684,55 @@ a.channels__a:hover .channels__ico { background: var(--signal); border-color: va
   .ops { height: 460px; }
   .ops__screen { inset: 0 -30%; }
 }
+
+/* ---------- sleeping cat (Cat) — lives on the bottom edge, flees the pointer ---------- */
+.cat { position: fixed; left: 0; bottom: 0; z-index: 80; width: 108px; pointer-events: none; transition-property: transform; transition-timing-function: linear; will-change: transform; }
+.cat__flip { transition: none; }
+.cat__pose { display: block; width: 100%; height: auto; overflow: visible; }
+.cat__pose--run { display: none; }
+.cat--run .cat__pose--sleep { display: none; }
+.cat--run .cat__pose--run { display: block; }
+.cat__fur { fill: var(--paper); stroke: var(--ink); stroke-width: 2; stroke-linejoin: round; }
+.cat__tail-o { fill: none; stroke: var(--ink); stroke-width: 9; stroke-linecap: round; }
+.cat__tail { fill: none; stroke: var(--paper); stroke-width: 5; stroke-linecap: round; }
+.cat__stripe, .cat__whisker { fill: none; stroke: var(--ink); stroke-width: 1.6; stroke-linecap: round; }
+.cat__whisker { stroke-width: 1; opacity: .7; }
+.cat__eye-closed { fill: none; stroke: var(--ink); stroke-width: 1.8; stroke-linecap: round; }
+.cat__eye-open, .cat__eye-run { fill: var(--ink); }
+.cat__eye-open { display: none; }
+.cat__nose { fill: #E8899A; }
+.cat__shadow { fill: rgba(18, 19, 16, .12); }
+.cat__leg { fill: none; stroke: var(--ink); stroke-width: 4.5; stroke-linecap: round; transform-box: fill-box; transform-origin: 50% 0; }
+
+/* startled: eyes open, ears perk, a little hop */
+.cat--alert .cat__eye-closed { display: none; }
+.cat--alert .cat__eye-open { display: block; }
+.cat--alert .cat__head { transform: translateY(-5px); transition: transform .12s var(--ease); }
+.cat--alert .cat__pose--sleep { animation: catHop .3s var(--ease); }
+@keyframes catHop { 40% { transform: translateY(-6px); } }
+
+/* asleep: slow breathing and floating z's */
+.cat__z { position: absolute; left: 30%; top: 4px; font: 500 13px var(--mono); color: var(--ink); opacity: 0; pointer-events: none; }
+.cat__z::before { content: "z"; }
+.cat--sleep .cat__z { animation: catZ 3.6s ease-in infinite; }
+.cat--sleep .cat__z--2 { animation-delay: 1.2s; font-size: 11px; }
+.cat--sleep .cat__z--3 { animation-delay: 2.4s; font-size: 9px; }
+@keyframes catZ { 0% { opacity: 0; transform: translate(0, 0); } 15% { opacity: .85; } 100% { opacity: 0; transform: translate(-14px, -34px); } }
+.cat__breathe { transform-box: fill-box; transform-origin: 50% 100%; }
+.cat--sleep .cat__breathe { animation: catBreathe 3.2s ease-in-out infinite; }
+@keyframes catBreathe { 50% { transform: scale(1.02, 1.06); } }
+
+/* running: legs scamper, body bobs */
+.cat--run .cat__leg--a { animation: catLegA .22s ease-in-out infinite alternate; }
+.cat--run .cat__leg--b { animation: catLegB .22s ease-in-out infinite alternate; }
+@keyframes catLegA { from { transform: rotate(-32deg); } to { transform: rotate(32deg); } }
+@keyframes catLegB { from { transform: rotate(32deg); } to { transform: rotate(-32deg); } }
+.cat--run .cat__bob { animation: catBob .26s ease-in-out infinite alternate; }
+@keyframes catBob { from { transform: translateY(0); } to { transform: translateY(-3px); } }
+
+/* reduced motion: no running — a quick fade to the new spot */
+.cat--fade { animation: catFade .6s ease; }
+@keyframes catFade { 0% { opacity: 0; } 100% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .cat__z, .cat__breathe { animation: none !important; } }
+.is-menu .cat { display: none; }
+@media (max-width: 599px) { .cat { width: 80px; } }

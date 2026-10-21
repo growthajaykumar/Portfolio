@@ -3,6 +3,7 @@ import site from '../lib/site';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import Choreo from '../components/Choreo';
+import Cat from '../components/Cat';
 
 export const metadata = { metadataBase: new URL('https://growthwithajay.com') };
 export const viewport = { themeColor: '#EEEAE1' };
@@ -28,6 +29,7 @@ export default function RootLayout({ children }) {
         <main id="main">{children}</main>
         <Footer nav={site.nav} footer={site.footer} />
         <Choreo />
+        <Cat />
       </body>
     </html>
   );
