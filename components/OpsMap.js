@@ -44,16 +44,36 @@ function buildGraph(d) {
       if (h.chain) prev = leaf;
     });
   });
-  // depth (world z, + = toward viewer): core forward, hubs mid, leaves scattered front-to-back
-  const zr = rng(97);
+  // ---- 3D constellation (world units, origin = core; +Y down, +Z toward the camera at yaw 0) ----
+  // Hubs orbit the core on a ring at different heights; each hub's leaves fan outward from it;
+  // the pipeline ("chain") climbs as a helix. Stored as absolute coords around (800, 460).
+  const RING = 470;
+  const HUB3D = { services: [270, -280], web3: [342, -120], flow: [54, 120], fashion: [126, 200], estate: [198, 20] };
+  const byHub = {};
+  nodes.forEach((n) => { const m = n.id.match(/^(.*)-(\d+)$/); if (n.kind === 'leaf' && m) (byHub[m[1]] ||= []).push(n); });
+  const put = (n, X, Y, Z) => { n.wx = 800 + X; n.wy = 460 + Y; n.wz = Z; };
   nodes.forEach((n) => {
-    n.wx = n.x; n.wy = n.y;
-    n.wz = n.kind === 'core' ? 120 : n.kind === 'terminal' ? 170 : n.kind === 'hub' ? 40 : -150 + zr() * 230;
+    if (n.kind === 'core') put(n, 0, 0, 0);
+    if (n.kind === 'terminal') put(n, 150, -150, 120);
+    if (n.kind !== 'hub') return;
+    const [deg, y] = HUB3D[n.id], th = (deg * Math.PI) / 180, dx = Math.cos(th), dz = Math.sin(th), tx = -dz, tz = dx;
+    put(n, dx * RING, y, dz * RING);
+    const leaves = byHub[n.id] || [], chain = n.id === 'flow', k = leaves.length;
+    leaves.forEach((l, j) => {
+      if (chain) {
+        const a = j * 1.15, out = 170 + j * 70;
+        put(l, dx * (RING + out) + tx * Math.sin(a) * 120, y - 40 + j * 46, dz * (RING + out) + tz * Math.sin(a) * 120);
+      } else {
+        const off = (j - (k - 1) / 2) * 165, up = (j % 2 ? 1 : -1) * 85, out = RING + 230 + (j % 2 ? 60 : 0);
+        put(l, dx * out + tx * off, y + up, dz * out + tz * off);
+      }
+    });
   });
   edges.forEach((e) => {
-    const mx = (e.a.x + e.b.x) / 2, my = (e.a.y + e.b.y) / 2, dx = e.b.x - e.a.x, dy = e.b.y - e.a.y;
-    e.wcx = mx - dy * e.bend; e.wcy = my + dx * e.bend; e.wcz = (e.a.wz + e.b.wz) / 2; e.cx = e.wcx; e.cy = e.wcy;
-    e.len = Math.hypot(dx, dy);
+    const mx = (e.a.wx + e.b.wx) / 2, my = (e.a.wy + e.b.wy) / 2, mz = (e.a.wz + e.b.wz) / 2;
+    e.len = Math.hypot(e.b.wx - e.a.wx, e.b.wy - e.a.wy, e.b.wz - e.a.wz);
+    // wires arc upward a little, like cables between nodes
+    e.wcx = mx; e.wcy = my - e.len * 0.16; e.wcz = mz; e.cx = mx; e.cy = my;
     e.pt = (t) => { const m = 1 - t; return [m * m * e.a.x + 2 * m * t * e.cx + t * t * e.b.x, m * m * e.a.y + 2 * m * t * e.cy + t * t * e.b.y]; };
   });
   // per-leaf precomputed geometry
@@ -102,15 +122,15 @@ export default function OpsMap({ data }) {
     const font = getComputedStyle(document.body).getPropertyValue('--sans') || 'sans-serif';
     let cw = 0, ch = 0, dpr = 1, s = 1, ox = 0, oy = 0, raf = 0, visible = true, t0 = performance.now(), last = 0;
     const pulses = [];
-    const cam = { yaw: 0, pitch: 0 }, aim = { x: 0, y: 0 };
+    const cam = { yaw: 0.55, pitch: 0.27, spin: 0.55, last: 0 }, aim = { x: 0, y: 0 };
 
     function fit() {
       const r = el.getBoundingClientRect();
       cw = r.width; ch = r.height; dpr = Math.min(window.devicePixelRatio || 1, 2);
       canvas.width = Math.round(cw * dpr); canvas.height = Math.round(ch * dpr);
-      if (cw < 760) { s = (ch / H) * 1.05; ox = cw / 2 - 800 * s; }
-      else { s = Math.min(cw / W, ch / H) * 0.84; ox = (cw - W * s) / 2; }
-      oy = (ch - H * s) / 2;
+      if (cw < 760) { s = Math.min(cw / 1200, ch / 1280); ox = cw / 2 - 800 * s; }
+      else { s = Math.min(cw / 2150, ch / 1280); ox = cw / 2 - 800 * s; }
+      oy = ch / 2 - 540 * s;
     }
 
     const lw = (px) => px / s;
@@ -241,25 +261,38 @@ export default function OpsMap({ data }) {
       ctx.setTransform(dpr * s, 0, 0, dpr * s, dpr * ox, dpr * oy);
 
       // ---- camera: level horizon, gentle orbit (yaw) + slight pitch, steered by the pointer ----
-      cam.yaw += ((reduce ? 0 : Math.sin(t * 0.22) * 0.13 + aim.x * 0.12) - cam.yaw) * 0.06;
-      cam.pitch += ((reduce ? 0 : Math.sin(t * 0.17) * 0.035 + aim.y * 0.06) - cam.pitch) * 0.06;
-      const cy0 = Math.cos(cam.yaw), sy0 = Math.sin(cam.yaw), cp = Math.cos(cam.pitch), sp = Math.sin(cam.pitch), F = 1500;
+      // full 360° orbit (one turn every ~48s); the pointer nudges the angle and the elevation
+      const dt = Math.min(0.05, Math.max(0, (now - (cam.last || now)) / 1000)); cam.last = now;
+      if (!reduce) cam.spin += dt * (Math.PI * 2) / 48;
+      cam.yaw += ((reduce ? 0.55 : cam.spin + aim.x * 0.6) - cam.yaw) * 0.08;
+      cam.pitch += ((reduce ? 0.27 : 0.27 + aim.y * 0.12) - cam.pitch) * 0.08;
+      const cy0 = Math.cos(cam.yaw), sy0 = Math.sin(cam.yaw), cp = Math.cos(cam.pitch), sp = Math.sin(cam.pitch), F = 3000;
       const project = (x, y, z) => {
         const dx = x - 800, dy = y - 460;
         const x1 = dx * cy0 + z * sy0, z1 = -dx * sy0 + z * cy0;
-        const y1 = dy * cp - z1 * sp, z2 = dy * sp + z1 * cp;
+        const y1 = dy * cp + z1 * sp, z2 = -dy * sp + z1 * cp;
         const f = F / (F - z2);
         return [800 + x1 * f, 460 + y1 * f, f, z2];
       };
       G.nodes.forEach((n) => { const [x, y, f, z] = project(n.wx, n.wy, n.wz); n.x = x; n.y = y; n.f = f; n.z = z; });
       G.edges.forEach((e) => { const [x, y] = project(e.wcx, e.wcy, e.wcz); e.cx = x; e.cy = y; });
 
-      // floor grid: a plane receding behind the map
-      ctx.strokeStyle = 'rgba(18,19,16,.075)'; ctx.lineWidth = lw(1); ctx.beginPath();
-      const GZ = -260;
-      for (let x = -800; x <= W + 800; x += 160) { const a = project(x, -500, GZ), b = project(x, H + 500, GZ); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); }
-      for (let y = -480; y <= H + 480; y += 160) { const a = project(-800, y, GZ), b = project(W + 800, y, GZ); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); }
-      ctx.stroke();
+      // floor: a ground plane beneath the constellation, rotating with it, fading toward the edges
+      ctx.lineWidth = lw(1);
+      const FY = 460 + 460, GR = 1120, STEP = 140;
+      for (let i = -GR; i <= GR; i += STEP) {
+        for (let j = -GR; j < GR; j += STEP) {
+          for (const [x1, z1, x2, z2] of [[i, j, i, j + STEP], [j, i, j + STEP, i]]) {
+            const d = Math.hypot((x1 + x2) / 2, (z1 + z2) / 2) / GR; if (d > 1) continue;
+            const a = project(800 + x1, FY, z1), b = project(800 + x2, FY, z2);
+            ctx.strokeStyle = `rgba(18,19,16,${(0.11 * (1 - d) * (1 - d)).toFixed(3)})`;
+            ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
+          }
+        }
+      }
+      // soft shadow of each hub on the floor ties the constellation to the ground
+      G.nodes.forEach((n) => { if (n.kind !== 'hub' && n.kind !== 'core') return; const [sx, sy, sf] = project(n.wx, FY, n.wz);
+        ctx.save(); ctx.translate(sx, sy); ctx.scale(sf, sf * 0.32); glowDot(0, 0, 46, 'rgba(18,19,16,1)', 0.1); ctx.restore(); });
 
       // (old flat grid kept off)
       if (false) {
@@ -293,7 +326,7 @@ export default function OpsMap({ data }) {
       [...G.nodes].sort((a, b) => a.z - b.z).forEach((n) => {
         const hot = spot && (n.id === spot || n.id.startsWith(spot + '-'));
         ctx.save();
-        ctx.globalAlpha = Math.max(0.68, Math.min(1, 0.88 + n.z / 600));
+        ctx.globalAlpha = Math.max(0.42, Math.min(1, 0.8 + n.z / 1100));
         ctx.translate(n.x, n.y); ctx.scale(n.f, n.f); ctx.translate(-n.x, -n.y);
         if (n.kind === 'leaf') drawLeaf(n, t, hot);
         else if (n.kind === 'hub') drawHub(n, t, spot === n.id);
