@@ -122,7 +122,7 @@ export default function OpsMap({ data }) {
     const font = getComputedStyle(document.body).getPropertyValue('--sans') || 'sans-serif';
     let cw = 0, ch = 0, dpr = 1, s = 1, ox = 0, oy = 0, raf = 0, visible = true, t0 = performance.now(), last = 0;
     const pulses = [];
-    const cam = { yaw: 0.55, pitch: 0.27, spin: 0.55, last: 0 }, aim = { x: 0, y: 0 };
+    const cam = { yaw: 0.55, pitch: 0.27 }, aim = { x: 0, y: 0 };
 
     function fit() {
       const r = el.getBoundingClientRect();
@@ -262,10 +262,11 @@ export default function OpsMap({ data }) {
 
       // ---- camera: level horizon, gentle orbit (yaw) + slight pitch, steered by the pointer ----
       // full 360° orbit (one turn every ~48s); the pointer nudges the angle and the elevation
-      const dt = Math.min(0.05, Math.max(0, (now - (cam.last || now)) / 1000)); cam.last = now;
-      if (!reduce) cam.spin += dt * (Math.PI * 2) / 48;
-      cam.yaw += ((reduce ? 0.55 : cam.spin + aim.x * 0.6) - cam.yaw) * 0.08;
-      cam.pitch += ((reduce ? 0.27 : 0.27 + aim.y * 0.12) - cam.pitch) * 0.08;
+      // steady: no auto-spin. The pointer's horizontal position across the map sets the angle
+      // (left edge → right edge = one full 360° turn); vertical position sets the elevation.
+      // The camera eases toward that target and holds still when the pointer stops.
+      cam.yaw += ((reduce ? 0.55 : 0.55 + aim.x * Math.PI) - cam.yaw) * 0.07;
+      cam.pitch += ((reduce ? 0.27 : 0.27 + aim.y * 0.16) - cam.pitch) * 0.07;
       const cy0 = Math.cos(cam.yaw), sy0 = Math.sin(cam.yaw), cp = Math.cos(cam.pitch), sp = Math.sin(cam.pitch), F = 3000;
       const project = (x, y, z) => {
         const dx = x - 800, dy = y - 460;
@@ -349,6 +350,7 @@ export default function OpsMap({ data }) {
       const onMove = (e) => {
         const r = el.getBoundingClientRect();
         const nx = (e.clientX - (r.left + r.width / 2)) / r.width, ny = (e.clientY - (r.top + r.height / 2)) / r.height;
+        if (e.pointerType === 'mouse' && (e.clientY < r.top - 120 || e.clientY > r.bottom + 120)) return;
         aim.x = Math.max(-1, Math.min(1, nx * 2)); aim.y = Math.max(-1, Math.min(1, ny * 2));
       };
       hero.addEventListener('pointermove', onMove, { passive: true });

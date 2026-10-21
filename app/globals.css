@@ -680,6 +680,8 @@ a.channels__a:hover .channels__ico { background: var(--signal); border-color: va
 }
 .ops__screen { position: absolute; inset: 0; }
 .ops canvas { display: block; width: 100%; height: 100%; }
+/* drag horizontally on touch screens to turn the map; vertical swipes still scroll the page */
+.ops { touch-action: pan-y; cursor: grab; }
 @media (max-width: 759px) {
   .ops { height: 460px; }
   .ops__screen { inset: 0 -30%; }
